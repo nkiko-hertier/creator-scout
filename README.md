@@ -1,0 +1,2 @@
+# creator-scout
+creator-scout
