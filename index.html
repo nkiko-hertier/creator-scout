@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>Creator Scout</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230D2B2E'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%23E3B45C' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='2.2' fill='%23E3B45C'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --kelp: #0D2B2E;
+    --kelp-2: #16403F;
+    --fog: #EEF1EF;
+    --paper: #FFFFFF;
+    --ink: #14201F;
+    --muted: #5B6B69;
+    --line: #DAE1DE;
+    --line-strong: #C3CDC9;
+    --brass: #C8963E;
+    --brass-soft: #E3B45C;
+    --brass-wash: #F6EBD3;
+    --ok: #2F7D5B;
+    --warn: #B7791F;
+    --err: #B3402F;
+    --display: 'Bricolage Grotesque', 'Avenir Next', system-ui, sans-serif;
+    --body: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--fog);
+    color: var(--ink);
+    font: 15px/1.5 var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+  /* ---------- layout ---------- */
+  .app { display: grid; grid-template-columns: 288px minmax(0, 1fr); min-height: 100vh; }
+
+  .rail {
+    background: var(--kelp);
+    color: #E6EEEB;
+    padding: 28px 16px 20px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 0 12px 24px; }
+  .brand svg { flex: none; }
+  .brand span { font-family: var(--display); font-weight: 600; font-size: 21px; letter-spacing: -0.01em; color: #fff; }
+
+  .niches { display: flex; flex-direction: column; gap: 2px; overflow-y: auto; flex: 1; padding-right: 2px; }
+  .niche {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    width: 100%; padding: 10px 12px; border: 0; border-radius: 10px;
+    background: transparent; color: inherit; text-align: left; font-size: 14.5px;
+  }
+  .niche:hover { background: rgba(255,255,255,.06); }
+  .niche[aria-current="true"] { background: var(--kelp-2); color: #fff; font-weight: 600; }
+  .niche .n { font-variant-numeric: tabular-nums; font-size: 13px; color: rgba(230,238,235,.5); }
+  .niche[aria-current="true"] .n { color: var(--brass-soft); }
+  .rail :focus-visible { outline-color: var(--brass-soft); }
+
+  .rail-foot { padding: 16px 12px 0; margin-top: 12px; border-top: 1px solid rgba(255,255,255,.10); font-size: 13px; color: rgba(230,238,235,.65); }
+  .rail-foot strong { color: #fff; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  .main { padding: 40px clamp(20px, 4vw, 56px) 72px; }
+  .main-inner { max-width: 1080px; margin: 0 auto; }
+
+  /* ---------- header ---------- */
+  .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; flex-wrap: wrap; margin-bottom: 24px; }
+  h1 { font-family: var(--display); font-weight: 600; font-size: clamp(30px, 4vw, 42px); line-height: 1.08; letter-spacing: -0.025em; margin: 0 0 6px; }
+  .head p { margin: 0; color: var(--muted); }
+  .sync { display: flex; align-items: center; gap: 8px; }
+  .status {
+    display: inline-flex; align-items: center; gap: 8px; max-width: 360px;
+    padding: 7px 14px; border: 1px solid var(--line); border-radius: 999px;
+    background: var(--paper); font-size: 13px; color: var(--muted);
+  }
+  .status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line-strong); flex: none; }
+  .status[data-state="ok"] .dot { background: var(--ok); }
+  .status[data-state="work"] .dot { background: var(--warn); }
+  .status[data-state="err"] .dot { background: var(--err); }
+  .status[data-state="err"] { color: var(--err); }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    height: 44px; padding: 0 22px; border-radius: 10px; border: 1px solid var(--kelp);
+    background: var(--kelp); color: #fff; font-weight: 600; transition: background .15s;
+  }
+  .btn:hover { background: var(--kelp-2); }
+  .btn.ghost { height: 38px; padding: 0 14px; background: var(--paper); color: var(--ink); border-color: var(--line-strong); font-weight: 500; font-size: 14px; }
+  .btn.ghost:hover { background: #F5F8F6; border-color: var(--muted); }
+  .btn.quiet { border: 0; background: transparent; color: var(--muted); font-weight: 500; font-size: 13px; height: 32px; padding: 0 8px; }
+  .btn.quiet:hover { color: var(--err); background: transparent; }
+
+  /* ---------- keywords ---------- */
+  .keywords { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 15px; border-radius: 999px; border: 1px solid var(--line-strong);
+    background: var(--paper); font-size: 14px; transition: border-color .15s, background .15s;
+  }
+  .chip:hover { border-color: var(--kelp); }
+  .chip[aria-pressed="true"] { background: var(--kelp); border-color: var(--kelp); color: #fff; }
+  .chip .c { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ok); }
+  .chip[aria-pressed="true"] .c { color: var(--brass-soft); }
+
+  /* ---------- panels ---------- */
+  .panel { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 26px; margin-bottom: 28px; }
+  .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+  h2 { font-family: var(--display); font-weight: 600; font-size: 22px; letter-spacing: -0.015em; margin: 0; }
+  .context { color: var(--muted); font-size: 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .context strong { color: var(--ink); font-weight: 600; }
+
+  .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 16px; }
+  .field.full { grid-column: 1 / -1; }
+  label { display: block; font-size: 13.5px; font-weight: 600; margin-bottom: 6px; }
+  label .opt { font-weight: 400; color: var(--muted); margin-left: 4px; }
+  input[type="text"], input[type="email"], input[type="search"], textarea {
+    width: 100%; height: 44px; padding: 0 14px; border-radius: 10px;
+    border: 1px solid var(--line-strong); background: #fff; outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  textarea { height: auto; min-height: 84px; padding: 11px 14px; resize: vertical; line-height: 1.5; }
+  input::placeholder, textarea::placeholder { color: #93A19E; }
+  input:focus, textarea:focus { border-color: var(--kelp); box-shadow: 0 0 0 3px rgba(200,150,62,.38); }
+  .hint { min-height: 20px; margin: 7px 0 0; font-size: 13px; color: var(--muted); }
+  .hint.good { color: var(--ok); }
+  .hint.warn { color: var(--warn); }
+  .hint.bad { color: var(--err); }
+  .submit-row { display: flex; justify-content: flex-end; margin-top: 22px; }
+
+  /* ---------- ledger ---------- */
+  .ledger-tools { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .seg { display: inline-flex; padding: 3px; background: var(--fog); border-radius: 10px; }
+  .seg button { border: 0; background: transparent; padding: 7px 14px; border-radius: 8px; font-size: 13.5px; color: var(--muted); font-weight: 500; }
+  .seg button[aria-pressed="true"] { background: var(--paper); color: var(--ink); box-shadow: 0 1px 2px rgba(20,32,31,.12); }
+  .ledger-tools .search { flex: 1; min-width: 180px; max-width: 320px; }
+  .ledger-tools input[type="search"] { height: 38px; font-size: 14px; }
+  .spacer { flex: 1; }
+
+  .table-wrap { overflow-x: auto; border-top: 1px solid var(--line); }
+  table { width: 100%; min-width: 860px; border-collapse: collapse; }
+  th { text-align: left; font-size: 12.5px; font-weight: 600; color: var(--muted); padding: 12px 12px 10px; white-space: nowrap; }
+  td { padding: 14px 12px; border-top: 1px solid var(--line); vertical-align: top; font-size: 14px; }
+  tbody tr:first-child td { border-top: 0; }
+  tbody tr:hover td { background: #F8FAF9; }
+  .handle { font-weight: 600; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--brass); }
+  a.handle:hover { color: var(--kelp-2); }
+  .sub { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  td.notes { max-width: 280px; color: #33423F; }
+  td.notes span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  td a.mail { color: var(--kelp-2); text-decoration: none; border-bottom: 1px solid var(--line-strong); }
+  td a.mail:hover { border-color: var(--kelp-2); }
+  td.date { white-space: nowrap; color: var(--muted); }
+  .btn.quiet.armed { color: var(--err); font-weight: 600; }
+  .dash { color: #A5B1AE; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  .empty { padding: 44px 16px 36px; text-align: center; border-top: 1px solid var(--line); }
+  .empty strong { display: block; font-family: var(--display); font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .empty span { color: var(--muted); }
+
+  .foot-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+  .foot-actions p { margin: 0; font-size: 13px; color: var(--muted); }
+
+  @keyframes settle { from { background: var(--brass-wash); } to { background: transparent; } }
+  tr.fresh td { animation: settle 1.8s ease-out; }
+
+  /* ---------- small screens ---------- */
+  @media (max-width: 860px) {
+    .app { grid-template-columns: 1fr; }
+    .rail { position: static; height: auto; padding: 16px 12px 12px; }
+    .brand { padding-bottom: 12px; }
+    .niches { flex-direction: row; overflow-x: auto; overflow-y: hidden; gap: 6px; padding-bottom: 6px; flex: none; }
+    .niche { width: auto; white-space: nowrap; gap: 8px; padding: 9px 14px; }
+    .rail-foot { display: none; }
+    .main { padding-top: 28px; }
+  }
+  @media (max-width: 600px) {
+    .fields { grid-template-columns: 1fr; }
+    .panel { padding: 20px; }
+    .submit-row .btn { width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="rail">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="10" fill="none" stroke="#E3B45C" stroke-width="2.5"/><circle cx="16" cy="16" r="2.6" fill="#E3B45C"/></svg>
+      <span>Creator Scout</span>
+    </div>
+    <nav class="niches" id="nicheList" aria-label="Niches"></nav>
+    <div class="rail-foot"><strong id="totalCount">0</strong> creators saved in total</div>
+  </aside>
+
+  <main class="main">
+    <div class="main-inner">
+
+      <header class="head">
+        <div>
+          <h1 id="nicheTitle"></h1>
+          <p id="nicheSub"></p>
+        </div>
+        <div class="sync">
+          <div class="status" id="status" data-state="idle" role="status" aria-live="polite">
+            <span class="dot"></span><span id="statusText">Not synced yet</span>
+          </div>
+          <button class="btn ghost" id="syncBtn" type="button">Sync now</button>
+        </div>
+      </header>
+
+      <div class="keywords" id="keywordList" role="group" aria-label="Keywords"></div>
+
+      <section class="panel" aria-labelledby="addTitle">
+        <div class="panel-head">
+          <h2 id="addTitle">Add a creator</h2>
+          <div class="context">
+            <span>Logging under <strong id="ctxKeyword"></strong></span>
+            <button class="btn ghost" id="copyKeyword" type="button">Copy keyword</button>
+          </div>
+        </div>
+
+        <form id="addForm" autocomplete="off" novalidate>
+          <div class="fields">
+            <div class="field full">
+              <label for="link">Instagram profile link</label>
+              <input type="text" id="link" placeholder="https://instagram.com/janedoe" inputmode="url" spellcheck="false">
+              <p class="hint" id="linkHint" aria-live="polite"></p>
+            </div>
+            <div class="field">
+              <label for="followers">Followers <span class="opt">optional</span></label>
+              <input type="text" id="followers" placeholder="45k">
+            </div>
+            <div class="field">
+              <label for="email">Email <span class="opt">optional</span></label>
+              <input type="email" id="email" placeholder="jane@creatormail.com" spellcheck="false">
+            </div>
+            <div class="field full">
+              <label for="notes">Notes <span class="opt">optional</span></label>
+              <textarea id="notes" placeholder="Engagement quality, past brand deals, tone of content"></textarea>
+            </div>
+          </div>
+          <div class="submit-row">
+            <button class="btn" type="submit">Add creator</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel" aria-labelledby="ledgerTitle">
+        <div class="panel-head">
+          <h2 id="ledgerTitle">Saved creators</h2>
+        </div>
+
+        <div class="ledger-tools">
+          <div class="seg" role="group" aria-label="Show creators from">
+            <button type="button" data-scope="keyword" aria-pressed="true">This keyword</button>
+            <button type="button" data-scope="niche" aria-pressed="false">This niche</button>
+            <button type="button" data-scope="all" aria-pressed="false">Everything</button>
+          </div>
+          <div class="search">
+            <input type="search" id="searchBox" placeholder="Search handle, email, or notes" aria-label="Search saved creators">
+          </div>
+          <span class="spacer"></span>
+          <button class="btn ghost" id="exportBtn" type="button">Export CSV</button>
+          <button class="btn ghost" id="copyBtn" type="button">Copy for Google Sheets</button>
+        </div>
+
+        <div id="tableWrap"></div>
+
+        <div class="foot-actions">
+          <p>Everything is also kept in this browser, so a refresh never loses your list.</p>
+          <button class="btn quiet" id="clearBtn" type="button">Clear local data</button>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+const NICHES = {
+  "Fitness & Health": ["fitness meal prep","weight loss tips","home workout routine","bodybuilding tips","yoga for beginners","running training plan","postpartum fitness","mobility exercises","gut health tips","sleep optimization"],
+  "Personal Finance / Money": ["personal finance tips","budgeting hacks","investing for beginners","side hustle ideas","debt payoff journey","real estate investing","stock market tips","frugal living tips","credit score tips","financial independence"],
+  "Parenting & Family": ["parenting tips","toddler activities","newborn sleep tips","homeschool mom","single parent life","positive parenting","montessori parenting","new mom tips","blended family tips","dad life tips"],
+  "Business & Entrepreneurship": ["small business tips","ecommerce tips","dropshipping tips","freelancing tips","personal branding tips","sales tips","copywriting tips","startup founder tips","business coach tips","agency owner tips"],
+  "Marketing & Social Media": ["social media marketing","content creation tips","instagram growth tips","tiktok growth tips","email marketing tips","seo tips","branding tips","influencer marketing","video editing tips","podcasting tips"],
+  "Career & Productivity": ["career advice","resume tips","job interview tips","productivity hacks","time management tips","remote work tips","work from home tips","corporate career tips","networking tips","public speaking tips"],
+  "Beauty & Style": ["skincare routine","makeup tutorial tips","hair care tips","fashion styling tips","capsule wardrobe","thrifting tips","nail art tips","men's grooming tips","curly hair tips","minimalist style"],
+  "Food & Cooking": ["easy recipes","meal planning tips","baking tips","vegan recipes","high protein recipes","air fryer recipes","budget meals","meal prep for beginners","healthy snacks","cooking for beginners"],
+  "Relationships & Dating": ["dating advice","relationship tips","marriage advice","breakup recovery","attachment style tips","long distance relationship","communication skills","self love tips","confidence building","dating apps tips"],
+  "Mental Health & Mindset": ["mindset coaching","anxiety relief tips","mental health awareness","journaling prompts","stress management tips","habit building tips","self improvement tips","manifestation tips","therapy insights","burnout recovery"],
+  "Education & Learning": ["study tips","language learning tips","exam prep tips","college advice","note taking tips","speed reading tips","online course tips","tutoring tips","memory improvement","learning hacks"],
+  "Niche/Emerging": ["pet training tips","gardening tips","travel hacking tips","van life tips","sustainable living","minimalism tips","crypto education","AI tools tips","photography tips","interior design tips"]
+};
+
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzKJ0dvCyqOJNkiJjoN6Q17NqG247NeB6TtOiPDGhcE3bVjr6Zk2P71j7yCxPtATRrs/exec';
+const STORE_KEY = 'creatorTrackerData';
+const VIEW_KEY = 'creatorScoutView';
+
+const nicheNames = Object.keys(NICHES);
+const state = { niche: nicheNames[0], keyword: NICHES[nicheNames[0]][0], scope: 'keyword', search: '', freshId: null };
+
+const $ = id => document.getElementById(id);
+
+/* ---------- storage ---------- */
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) { return []; }
+}
+function saveData(data) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {}
+}
+function saveView() {
+  try { localStorage.setItem(VIEW_KEY, JSON.stringify({ niche: state.niche, keyword: state.keyword })); } catch (e) {}
+}
+function restoreView() {
+  try {
+    const v = JSON.parse(localStorage.getItem(VIEW_KEY) || 'null');
+    if (v && NICHES[v.niche] && NICHES[v.niche].includes(v.keyword)) {
+      state.niche = v.niche; state.keyword = v.keyword;
+    }
+  } catch (e) {}
+}
+
+/* ---------- helpers ---------- */
+function esc(v) {
+  return String(v == null ? '' : v)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function norm(v) { return String(v == null ? '' : v).trim().toLowerCase(); }
+function normKey(handle, keyword) { return norm(handle) + '||' + norm(keyword); }
+function plural(n, word) { return n + ' ' + word + (n === 1 ? '' : 's'); }
+function safeUrl(v) {
+  try {
+    const u = new URL(String(v));
+    return (u.protocol === 'http:' || u.protocol === 'https:') ? u.href : '';
+  } catch (e) { return ''; }
+}
+function formatDate(v) {
+  const s = String(v == null ? '' : v);
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) {
+    const d = new Date(+m[1], +m[2] - 1, +m[3]);
+    return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  return s;
+}
+function csvSafe(v) {
+  let s = String(v == null ? '' : v);
+  if (/^[=+\-@]/.test(s)) s = "'" + s;
+  return s;
+}
+
+/* ---------- profile link -> handle ---------- */
+const RESERVED = ['p', 'reel', 'reels', 'stories', 'explore', 'tv', 'accounts', 'direct', 'about', 'legal'];
+function parseProfile(input) {
+  const raw = (input || '').trim();
+  if (!raw) return { handle: '', error: '' };
+  let h;
+  if (/^https?:\/\//i.test(raw) || /instagram\.com/i.test(raw)) {
+    if (!/instagram\.com/i.test(raw)) return { handle: '', error: 'That doesn’t look like an Instagram link.' };
+    const path = raw.replace(/^https?:\/\//i, '').replace(/^(www\.|m\.)?instagram\.com\/?/i, '');
+    const seg = path.split(/[\/?#]/)[0];
+    if (!seg) return { handle: '', error: 'Paste a creator’s profile link, not the Instagram home page.' };
+    if (RESERVED.includes(seg.toLowerCase())) return { handle: '', error: 'That’s a post or page link. Open the creator’s profile and copy that link.' };
+    h = seg;
+  } else {
+    h = raw.replace(/^@/, '').split(/[\/?#\s]/)[0];
+  }
+  if (!/^[A-Za-z0-9._]{1,30}$/.test(h)) return { handle: '', error: 'Couldn’t read a handle from that.' };
+  return { handle: h, error: '' };
+}
+
+/* ---------- sync status ---------- */
+function setStatus(kind, msg) {
+  $('status').dataset.state = kind;
+  $('statusText').textContent = msg;
+}
+
+/* ---------- sheet calls ---------- */
+function fetchFromSheet() {
+  return fetch(SHEET_URL + '?action=list').then(res => res.json());
+}
+function postToSheet(payload) {
+  // text/plain + no-cors avoids the preflight request Apps Script can't answer.
+  return fetch(SHEET_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+}
+function sendToSheet(e) {
+  return postToSheet({
+    action: 'add', rowId: e.id, handle: e.handle, niche: e.niche, keyword: e.keyword,
+    followers: e.followers, link: e.link, email: e.email, notes: e.notes
+  });
+}
+function deleteFromSheet(e) {
+  return postToSheet({ action: 'delete', rowId: e.id });
+}
+
+function syncFromSheet() {
+  setStatus('work', 'Loading from your sheet…');
+  $('syncBtn').disabled = true;
+  return fetchFromSheet().then(rows => {
+    if (!Array.isArray(rows)) throw new Error('Unexpected response');
+    const local = loadData();
+    const keys = new Set(local.map(e => normKey(e.handle, e.keyword)));
+    let added = 0;
+    rows.forEach(row => {
+      const key = normKey(row.handle, row.keyword);
+      if (!row.handle || keys.has(key)) return;
+      local.push({
+        id: row.rowId || (Date.now() + Math.random()),
+        niche: row.niche || '',
+        keyword: row.keyword || '',
+        handle: String(row.handle),
+        followers: row.followers == null ? '' : String(row.followers),
+        link: row.link || '',
+        email: row.email || '',
+        notes: row.notes || '',
+        dateAdded: row.dateAdded || ''
+      });
+      keys.add(key);
+      added++;
+    });
+    saveData(local);
+    renderAll();
+    setStatus('ok', added > 0 ? ('Loaded ' + plural(added, 'new creator') + ' from your sheet.') : 'Up to date with your sheet.');
+  }).catch(() => {
+    setStatus('err', 'Couldn’t reach your sheet. Showing what’s saved in this browser.');
+  }).then(() => { $('syncBtn').disabled = false; });
+}
+
+/* ---------- rendering ---------- */
+function renderNiches() {
+  const data = loadData();
+  $('nicheList').innerHTML = nicheNames.map(n => {
+    const count = data.filter(e => e.niche === n).length;
+    return '<button type="button" class="niche" data-niche="' + esc(n) + '"' +
+      (n === state.niche ? ' aria-current="true"' : '') + '>' +
+      '<span>' + esc(n) + '</span><span class="n">' + count + '</span></button>';
+  }).join('');
+  $('totalCount').textContent = data.length;
+}
+
+function renderHeader() {
+  const data = loadData();
+  const list = NICHES[state.niche];
+  const inNiche = data.filter(e => e.niche === state.niche).length;
+  $('nicheTitle').textContent = state.niche;
+  $('nicheSub').textContent = plural(list.length, 'keyword') + ' to search. ' + plural(inNiche, 'creator') + ' saved in this niche.';
+}
+
+function renderKeywords() {
+  const data = loadData();
+  $('keywordList').innerHTML = NICHES[state.niche].map(k => {
+    const count = data.filter(e => norm(e.keyword) === norm(k)).length;
+    return '<button type="button" class="chip" data-keyword="' + esc(k) + '" aria-pressed="' + (k === state.keyword) + '">' +
+      esc(k) + (count ? '<span class="c">' + count + '</span>' : '') + '</button>';
+  }).join('');
+  $('ctxKeyword').textContent = state.keyword;
+}
+
+function filteredRows() {
+  const q = norm(state.search);
+  return loadData().filter(e => {
+    if (state.scope === 'keyword' && norm(e.keyword) !== norm(state.keyword)) return false;
+    if (state.scope === 'niche' && e.niche !== state.niche) return false;
+    if (q) {
+      const hay = [e.handle, e.email, e.notes, e.keyword].map(norm).join(' ');
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  }).sort((a, b) => Number(b.id) - Number(a.id));
+}
+
+function rowHtml(e) {
+  const url = safeUrl(e.link);
+  const handle = url
+    ? '<a class="handle" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">@' + esc(e.handle) + '</a>'
+    : '<span class="handle">@' + esc(e.handle) + '</span>';
+  const email = e.email ? '<a class="mail" href="mailto:' + esc(e.email) + '">' + esc(e.email) + '</a>' : '<span class="dash">None</span>';
+  const notes = e.notes ? '<span title="' + esc(e.notes) + '">' + esc(e.notes) + '</span>' : '';
+  return '<tr' + (String(e.id) === String(state.freshId) ? ' class="fresh"' : '') + '>' +
+    '<td>' + handle + '</td>' +
+    '<td>' + esc(e.keyword) + '<span class="sub">' + esc(e.niche) + '</span></td>' +
+    '<td>' + (e.followers ? esc(e.followers) : '<span class="dash">None</span>') + '</td>' +
+    '<td>' + email + '</td>' +
+    '<td class="notes">' + notes + '</td>' +
+    '<td class="date">' + esc(formatDate(e.dateAdded)) + '</td>' +
+    '<td><button type="button" class="btn quiet" data-remove="' + esc(e.id) + '">Remove</button></td>' +
+    '</tr>';
+}
+
+function emptyHtml() {
+  let title, body;
+  if (state.search) {
+    title = 'No matches for “' + esc(state.search) + '”';
+    body = 'Try a different handle, email, or word from your notes.';
+  } else if (state.scope === 'keyword') {
+    title = 'Nothing saved for “' + esc(state.keyword) + '” yet';
+    body = 'Search it in Instagram Explore, open a creator’s profile, and paste the link above.';
+  } else if (state.scope === 'niche') {
+    title = 'Nothing saved in ' + esc(state.niche) + ' yet';
+    body = 'Pick a keyword above and add the first creator you find.';
+  } else {
+    title = 'No creators saved yet';
+    body = 'Pick a niche and keyword, then paste a creator’s profile link to start your list.';
+  }
+  return '<div class="empty"><strong>' + title + '</strong><span>' + body + '</span></div>';
+}
+
+function renderLedger() {
+  const rows = filteredRows();
+  document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.scope === state.scope));
+  if (!rows.length) { $('tableWrap').innerHTML = emptyHtml(); return; }
+  $('tableWrap').innerHTML =
+    '<div class="table-wrap"><table><thead><tr>' +
+    '<th>Creator</th><th>Keyword</th><th>Followers</th><th>Email</th><th>Notes</th><th>Added</th><th><span class="sr-only">Actions</span></th>' +
+    '</tr></thead><tbody>' + rows.map(rowHtml).join('') + '</tbody></table></div>';
+}
+
+function renderAll() {
+  renderNiches(); renderHeader(); renderKeywords(); renderLedger(); updateLinkHint();
+}
+
+/* ---------- link hint (live) ---------- */
+function updateLinkHint() {
+  const el = $('linkHint');
+  const raw = $('link').value;
+  const { handle, error } = parseProfile(raw);
+  el.className = 'hint';
+  if (!raw.trim()) { el.textContent = ''; return; }
+  if (error) { el.textContent = error; el.classList.add('bad'); return; }
+  const mine = loadData().filter(e => norm(e.handle) === norm(handle));
+  const sameKw = mine.some(e => norm(e.keyword) === norm(state.keyword));
+  if (sameKw) {
+    el.textContent = '@' + handle + ' is already saved for this keyword.';
+    el.classList.add('bad');
+  } else if (mine.length) {
+    const kws = [...new Set(mine.map(e => e.keyword))].slice(0, 3).join(', ');
+    el.textContent = '@' + handle + ' is already saved under: ' + kws + '. You can still add them here.';
+    el.classList.add('warn');
+  } else {
+    el.textContent = 'Handle: @' + handle;
+    el.classList.add('good');
+  }
+}
+
+/* ---------- actions ---------- */
+function addCreator(ev) {
+  ev.preventDefault();
+  const { handle, error } = parseProfile($('link').value);
+  if (!$('link').value.trim()) {
+    $('linkHint').className = 'hint bad';
+    $('linkHint').textContent = 'Paste the creator’s Instagram profile link first.';
+    $('link').focus();
+    return;
+  }
+  if (error) { $('link').focus(); return; }
+
+  const data = loadData();
+  const key = normKey(handle, state.keyword);
+  if (data.some(e => normKey(e.handle, e.keyword) === key)) { $('link').focus(); return; }
+
+  const entry = {
+    id: Date.now(),
+    niche: state.niche,
+    keyword: state.keyword,
+    handle: handle,
+    followers: $('followers').value.trim(),
+    link: 'https://instagram.com/' + handle,
+    email: $('email').value.trim(),
+    notes: $('notes').value.trim(),
+    dateAdded: new Date().toISOString().slice(0, 10)
+  };
+  data.push(entry);
+  saveData(data);
+  state.freshId = entry.id;
+
+  ['link', 'followers', 'email', 'notes'].forEach(id => { $(id).value = ''; });
+  renderAll();
+  $('link').focus();
+
+  setStatus('work', 'Sending @' + handle + ' to your sheet…');
+  sendToSheet(entry).then(
+    () => setStatus('ok', 'Sent @' + handle + ' to your sheet.'),
+    () => setStatus('err', 'Saved in this browser, but couldn’t reach your sheet.')
+  );
+}
+
+function removeCreator(id) {
+  const data = loadData();
+  const entry = data.find(e => String(e.id) === String(id));
+  if (!entry) return;
+  saveData(data.filter(e => String(e.id) !== String(id)));
+  renderAll();
+  setStatus('work', 'Removing @' + entry.handle + ' from your sheet…');
+  deleteFromSheet(entry).then(
+    () => setStatus('ok', 'Removed @' + entry.handle + ' from your sheet.'),
+    () => setStatus('err', 'Removed here, but couldn’t reach your sheet.')
+  );
+}
+
+function exportCSV() {
+  const data = loadData();
+  if (!data.length) { setStatus('err', 'Nothing to export yet.'); return; }
+  const headers = ['Handle', 'Niche', 'Keyword', 'Followers', 'Profile link', 'Email', 'Notes', 'Date added'];
+  let csv = headers.join(',') + '\n';
+  data.forEach(e => {
+    const row = [e.handle, e.niche, e.keyword, e.followers, e.link, e.email, e.notes, e.dateAdded];
+    csv += row.map(f => '"' + csvSafe(f).replace(/"/g, '""') + '"').join(',') + '\n';
+  });
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'creator_tracker.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function copyForSheets() {
+  const data = loadData();
+  if (!data.length) { setStatus('err', 'Nothing to copy yet.'); return; }
+  const headers = ['Handle', 'Niche', 'Keyword', 'Followers', 'Profile link', 'Email', 'Notes', 'Date added'];
+  let tsv = headers.join('\t') + '\n';
+  data.forEach(e => {
+    const row = [e.handle, e.niche, e.keyword, e.followers, e.link, e.email, e.notes, e.dateAdded];
+    tsv += row.map(f => String(f == null ? '' : f).replace(/[\t\r\n]+/g, ' ')).join('\t') + '\n';
+  });
+  navigator.clipboard.writeText(tsv).then(
+    () => setStatus('ok', 'Copied. Click cell A1 in a Google Sheet and paste.'),
+    () => setStatus('err', 'Couldn’t copy automatically. Use Export CSV instead.')
+  );
+}
+
+function copyKeyword() {
+  navigator.clipboard.writeText(state.keyword).then(
+    () => setStatus('ok', 'Copied “' + state.keyword + '”. Paste it into Instagram search.'),
+    () => setStatus('err', 'Couldn’t copy the keyword.')
+  );
+}
+
+function clearLocal() {
+  if (confirm('This clears the copy stored in this browser. Your Google Sheet keeps its rows, and they load again the next time you open this page.')) {
+    try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+    renderAll();
+    setStatus('idle', 'Local data cleared.');
+  }
+}
+
+/* ---------- events ---------- */
+$('nicheList').addEventListener('click', ev => {
+  const btn = ev.target.closest('button[data-niche]');
+  if (!btn) return;
+  state.niche = btn.dataset.niche;
+  state.keyword = NICHES[state.niche][0];
+  saveView(); renderAll();
+});
+
+$('keywordList').addEventListener('click', ev => {
+  const btn = ev.target.closest('button[data-keyword]');
+  if (!btn) return;
+  state.keyword = btn.dataset.keyword;
+  saveView(); renderAll();
+});
+
+document.querySelector('.seg').addEventListener('click', ev => {
+  const btn = ev.target.closest('button[data-scope]');
+  if (!btn) return;
+  state.scope = btn.dataset.scope;
+  renderLedger();
+});
+
+$('tableWrap').addEventListener('click', ev => {
+  const btn = ev.target.closest('button[data-remove]');
+  if (!btn) return;
+  if (btn.dataset.armed) { removeCreator(btn.dataset.remove); return; }
+  btn.dataset.armed = '1';
+  btn.textContent = 'Confirm remove';
+  btn.classList.add('armed');
+  setTimeout(() => {
+    if (btn.isConnected) {
+      delete btn.dataset.armed;
+      btn.textContent = 'Remove';
+      btn.classList.remove('armed');
+    }
+  }, 3000);
+});
+
+$('addForm').addEventListener('submit', addCreator);
+$('notes').addEventListener('keydown', ev => {
+  if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) $('addForm').requestSubmit();
+});
+$('link').addEventListener('input', updateLinkHint);
+$('searchBox').addEventListener('input', ev => { state.search = ev.target.value; renderLedger(); });
+$('syncBtn').addEventListener('click', syncFromSheet);
+$('exportBtn').addEventListener('click', exportCSV);
+$('copyBtn').addEventListener('click', copyForSheets);
+$('copyKeyword').addEventListener('click', copyKeyword);
+$('clearBtn').addEventListener('click', clearLocal);
+
+/* ---------- start ---------- */
+restoreView();
+renderAll();
+syncFromSheet();
+</script>
+</body>
+</html>
