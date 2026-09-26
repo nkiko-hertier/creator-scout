@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lumora Health — Understand Your Biology</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap');
+:root{--ink:#0f2a2a;--teal:#12524f;--mint:#bfe8d9;--cream:#f6f2ea;--coral:#ff7a59;--mut:#5d716f;--line:#dcd6ca}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:Inter,sans-serif;background:var(--cream);color:var(--ink);line-height:1.55;overflow-x:hidden}
+h1,h2,h3{font-family:Fraunces,serif;font-weight:600;letter-spacing:-.02em;line-height:1.08}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+.btn{display:inline-flex;align-items:center;gap:10px;background:var(--coral);color:#fff;padding:14px 26px;border-radius:999px;font-weight:600;border:0;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(255,122,89,.35)}
+.btn span{transition:transform .2s}.btn:hover span{transform:translateX(4px)}
+.tag{display:inline-block;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--teal);background:var(--mint);padding:6px 12px;border-radius:999px;margin-bottom:18px}
+section{padding:110px 0}
+.reveal{opacity:0;transform:translateY(30px);transition:all .8s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:50;transition:background .3s,box-shadow .3s}
+nav.solid{background:rgba(246,242,234,.9);backdrop-filter:blur(12px);box-shadow:0 1px 0 var(--line)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:72px}
+.logo{font-family:Fraunces,serif;font-size:24px;font-weight:600;display:flex;align-items:center;gap:8px}
+.logo i{width:22px;height:22px;border-radius:50%;background:conic-gradient(var(--coral),var(--mint),var(--teal),var(--coral))}
+.links{display:flex;gap:30px;font-size:15px;color:var(--mut)}
+.links a:hover{color:var(--ink)}
+nav .btn{padding:10px 20px;font-size:14px}
+@media(max-width:860px){.links{display:none}}
+
+/* hero */
+.hero{min-height:100vh;display:flex;align-items:center;position:relative;background:var(--ink);color:var(--cream);overflow:hidden;padding-top:72px}
+.orb{position:absolute;border-radius:50%;filter:blur(70px);opacity:.7;animation:float 14s ease-in-out infinite}
+.o1{width:520px;height:520px;background:var(--teal);top:-120px;right:-80px}
+.o2{width:380px;height:380px;background:var(--coral);bottom:-120px;right:22%;animation-delay:-5s;opacity:.45}
+.o3{width:300px;height:300px;background:var(--mint);top:30%;left:-120px;animation-delay:-9s;opacity:.35}
+@keyframes float{50%{transform:translate(40px,-40px) scale(1.08)}}
+.hero .wrap{position:relative;display:grid;grid-template-columns:1.2fr 1fr;gap:60px;align-items:center}
+.hero h1{font-size:clamp(44px,6.5vw,86px)}
+.hero h1 em{font-style:italic;color:var(--mint)}
+.hero p{font-size:19px;opacity:.8;max-width:520px;margin:24px 0 36px}
+.hero .tag{background:rgba(191,232,217,.15);color:var(--mint)}
+.pills{display:flex;flex-direction:column;gap:14px}
+.pill{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(10px);border-radius:20px;padding:18px 22px;display:flex;gap:16px;align-items:center;animation:bob 6s ease-in-out infinite}
+.pill:nth-child(2){margin-left:40px;animation-delay:-2s}.pill:nth-child(3){animation-delay:-4s}
+@keyframes bob{50%{transform:translateY(-8px)}}
+.pill b{display:block;font-size:15px}.pill small{opacity:.65;font-size:13px}
+.dot{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;flex-shrink:0;font-size:20px}
+@media(max-width:860px){.hero .wrap{grid-template-columns:1fr}.pill:nth-child(2){margin-left:0}}
+
+/* marquee */
+.markers{padding:70px 0;background:var(--cream)}
+.markers h3{text-align:center;font-size:30px;margin-bottom:40px}
+.track{display:flex;gap:20px;width:max-content;animation:scroll 45s linear infinite}
+.markers:hover .track{animation-play-state:paused}
+@keyframes scroll{to{transform:translateX(-50%)}}
+.mk{width:270px;background:#fff;border:1px solid var(--line);border-radius:22px;padding:24px;flex-shrink:0}
+.mk .v{font-family:Fraunces,serif;font-size:42px}.mk .u{font-size:14px;color:var(--mut);margin-left:4px}
+.mk h4{margin-top:10px;font-size:17px}.mk p{font-size:14px;color:var(--mut);margin-top:6px}
+.bar{height:6px;border-radius:9px;background:linear-gradient(90deg,#f3c4b6,var(--mint) 35%,var(--mint) 70%,#f3c4b6);margin-top:16px;position:relative}
+.bar i{position:absolute;top:-4px;width:14px;height:14px;border-radius:50%;background:var(--teal);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+
+/* features */
+.center{text-align:center;max-width:720px;margin:0 auto 60px}
+.center h2{font-size:clamp(34px,4.5vw,54px)}
+.center p{color:var(--mut);margin-top:16px;font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.card{background:#fff;border:1px solid var(--line);border-radius:24px;padding:32px;transition:transform .3s,box-shadow .3s}
+.card:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(15,42,42,.08)}
+.card .dot{background:var(--mint);margin-bottom:22px}
+.card h3{font-size:22px;margin-bottom:10px}.card p{color:var(--mut);font-size:15px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+
+/* vision */
+.vision{background:var(--teal);color:var(--cream)}
+.vision .wrap{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}
+.vision h2{font-size:clamp(34px,4.5vw,56px);margin-bottom:30px}
+.step{display:flex;gap:20px;padding:20px 0;border-bottom:1px solid rgba(255,255,255,.15);cursor:pointer;opacity:.5;transition:opacity .3s}
+.step.on,.step:hover{opacity:1}
+.step .n{font-family:Fraunces,serif;font-size:20px;color:var(--coral);width:30px}
+.step b{font-size:20px;font-family:Fraunces,serif}.step p{font-size:15px;opacity:.8;max-height:0;overflow:hidden;transition:max-height .4s}
+.step.on p{max-height:60px;margin-top:6px}
+.dash{background:var(--cream);color:var(--ink);border-radius:28px;padding:28px;box-shadow:0 30px 60px rgba(0,0,0,.25)}
+.dash .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.ring{width:130px;height:130px;border-radius:50%;background:conic-gradient(var(--coral) 0 var(--p),var(--line) 0);display:grid;place-items:center;transition:--p 1s}
+.ring div{width:104px;height:104px;border-radius:50%;background:var(--cream);display:grid;place-items:center;text-align:center;font-family:Fraunces,serif;font-size:32px;line-height:1}
+.ring small{font-family:Inter;font-size:11px;color:var(--mut);display:block}
+.rows div{display:flex;justify-content:space-between;font-size:14px;padding:10px 0;border-top:1px solid var(--line)}
+.chip{font-size:12px;padding:3px 10px;border-radius:99px}
+.ok{background:var(--mint);color:var(--teal)}.warn{background:#ffe1d8;color:#b8472b}
+.spark{height:70px;margin:12px 0 6px}
+@media(max-width:860px){.vision .wrap{grid-template-columns:1fr}}
+
+/* conditions */
+.tabs{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:34px}
+.tabs button{border:1px solid var(--line);background:#fff;padding:10px 18px;border-radius:999px;font:500 14px Inter;cursor:pointer;transition:all .2s}
+.tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.conds{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;min-height:120px}
+.conds span{background:#fff;border:1px solid var(--line);padding:9px 16px;border-radius:12px;font-size:14px;animation:pop .35s both}
+@keyframes pop{from{opacity:0;transform:scale(.9)}}
+
+/* audience */
+.aud{background:#fff}
+.toggle{display:inline-flex;background:var(--cream);border-radius:999px;padding:5px;margin:0 auto 44px;position:relative}
+.toggle button{border:0;background:none;padding:12px 30px;border-radius:999px;font:600 15px Inter;cursor:pointer;position:relative;z-index:1;transition:color .3s}
+.toggle button.on{color:#fff}
+.toggle i{position:absolute;top:5px;bottom:5px;left:5px;width:calc(50% - 5px);background:var(--teal);border-radius:999px;transition:transform .35s}
+.toggle.pro i{transform:translateX(100%)}
+.feat{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.feat div{padding:22px;border-radius:18px;background:var(--cream);animation:pop .4s both}
+.feat b{display:block;margin-bottom:4px}.feat p{font-size:14px;color:var(--mut)}
+@media(max-width:860px){.feat{grid-template-columns:1fr}}
+
+/* timeline */
+.time{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;position:relative}
+.time .card h4{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--coral);margin-bottom:8px}
+.time ul{list-style:none;margin-top:16px}.time li{font-size:15px;padding:6px 0 6px 24px;position:relative;color:var(--mut)}
+.time li:before{content:"✓";position:absolute;left:0;color:var(--teal);font-weight:700}
+@media(max-width:860px){.time{grid-template-columns:1fr}}
+
+/* faq */
+.faq{max-width:820px;margin:0 auto}
+.q{border-bottom:1px solid var(--line)}
+.q button{width:100%;text-align:left;background:none;border:0;padding:24px 0;font:600 18px Inter;color:var(--ink);cursor:pointer;display:flex;justify-content:space-between;gap:20px}
+.q button span{transition:transform .3s;font-size:22px;color:var(--coral)}
+.q.open button span{transform:rotate(45deg)}
+.q .a{max-height:0;overflow:hidden;transition:max-height .4s;color:var(--mut)}
+.q.open .a{max-height:300px}.q .a p{padding-bottom:24px}
+
+/* cta */
+.cta{background:var(--ink);color:var(--cream);border-radius:36px;padding:70px;display:grid;grid-template-columns:1.2fr 1fr;gap:50px;align-items:center;position:relative;overflow:hidden}
+.cta h2{font-size:clamp(32px,4vw,50px)}.cta p{opacity:.75;margin-top:14px}
+form{display:flex;flex-direction:column;gap:12px;position:relative}
+input{padding:15px 20px;border-radius:14px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font:15px Inter}
+input::placeholder{color:rgba(255,255,255,.5)}input:focus{outline:2px solid var(--mint)}
+.msg{font-size:14px;color:var(--mint);min-height:20px}
+@media(max-width:860px){.cta{grid-template-columns:1fr;padding:40px 28px}}
+
+footer{padding:60px 0 40px;color:var(--mut);font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:20px}
+</style>
+</head>
+<body>
+
+<nav id="nav"><div class="wrap">
+  <a href="#" class="logo"><i></i>Lumora</a>
+  <div class="links"><a href="#features">Features</a><a href="#conditions">Conditions</a><a href="#audience">Who it's for</a><a href="#faq">FAQ</a></div>
+  <a href="#join" class="btn">Get early access <span>→</span></a>
+</div></nav>
+
+<header class="hero">
+  <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+  <div class="wrap">
+    <div class="reveal">
+      <span class="tag">Now accepting early members</span>
+      <h1>Your lab results,<br><em>finally explained.</em></h1>
+      <p>Lumora turns blood tests and daily check-ins into clear, personal guidance — so you and your practitioner can act early, not late.</p>
+      <a href="#join" class="btn">Reserve my spot <span>→</span></a>
+    </div>
+    <div class="pills reveal">
+      <div class="pill"><div class="dot" style="background:var(--mint)">⚡</div><div><b>Results in minutes</b><small>Upload a PDF, get a full breakdown</small></div></div>
+      <div class="pill"><div class="dot" style="background:#ffd9ce">🧬</div><div><b>Optimal, not just "normal"</b><small>Ranges built for long-term health</small></div></div>
+      <div class="pill"><div class="dot" style="background:#e4def9">📈</div><div><b>Trends over time</b><small>See what's shifting and why</small></div></div>
+    </div>
+  </div>
+</header>
+
+<section class="markers">
+  <h3 class="reveal">A closer look at the numbers that matter</h3>
+  <div class="track" id="track"></div>
+</section>
+
+<section id="features"><div class="wrap">
+  <div class="center reveal"><span class="tag">Why Lumora</span><h2>Clarity instead of guesswork</h2><p>Everything you need to understand your body — gathered in one calm, readable place.</p></div>
+  <div class="grid">
+    <div class="card reveal"><div class="dot">📄</div><h3>Any lab, any country</h3><p>We read reports from different providers and unit systems and normalise them automatically.</p></div>
+    <div class="card reveal"><div class="dot">🧭</div><h3>Pattern detection</h3><p>Markers are read together, not in isolation, to surface the bigger story behind your results.</p></div>
+    <div class="card reveal"><div class="dot">🥗</div><h3>Practical next steps</h3><p>Food, sleep, movement and supplement ideas you can discuss with your practitioner.</p></div>
+    <div class="card reveal"><div class="dot">📝</div><h3>How you feel counts</h3><p>Log energy, mood and symptoms alongside your labs for a fuller picture.</p></div>
+    <div class="card reveal"><div class="dot">🔔</div><h3>Early signals</h3><p>Gentle alerts when a marker drifts, long before it becomes a bigger problem.</p></div>
+    <div class="card reveal"><div class="dot">🔒</div><h3>Private by design</h3><p>Encrypted storage, and you decide who sees your data — always.</p></div>
+  </div>
+</div></section>
+
+<section class="vision"><div class="wrap">
+  <div class="reveal">
+    <h2>Healthcare that feels like it was made for you</h2>
+    <div id="steps"></div>
+  </div>
+  <div class="dash reveal">
+    <div class="top"><div><small style="color:var(--mut)">Wellness score</small><h3 style="font-size:24px">This quarter</h3></div>
+      <div class="ring" id="ring" style="--p:0%"><div><span id="score">0</span><small>/ 100</small></div></div></div>
+    <svg class="spark" viewBox="0 0 300 70" preserveAspectRatio="none"><defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ff7a59" stop-opacity=".35"/><stop offset="1" stop-color="#ff7a59" stop-opacity="0"/></linearGradient></defs>
+      <path d="M0 55 C40 50 60 58 90 42 S150 38 180 30 S240 22 300 12 L300 70 L0 70Z" fill="url(#g)"/>
+      <path d="M0 55 C40 50 60 58 90 42 S150 38 180 30 S240 22 300 12" fill="none" stroke="#ff7a59" stroke-width="3"/></svg>
+    <div class="rows">
+      <div>Iron stores <span class="chip ok">Optimal</span></div>
+      <div>Blood sugar control <span class="chip ok">Improving</span></div>
+      <div>Inflammation <span class="chip warn">Watch</span></div>
+      <div>Thyroid balance <span class="chip ok">Stable</span></div>
+    </div>
+  </div>
+</div></section>
+
+<section id="conditions"><div class="wrap">
+  <div class="center reveal"><span class="tag">Coverage</span><h2>Support across the whole body</h2><p>Explore some of the areas Lumora helps you and your practitioner understand.</p></div>
+  <div class="tabs reveal" id="tabs"></div>
+  <div class="conds" id="conds"></div>
+</div></section>
+
+<section class="aud" id="audience"><div class="wrap" style="text-align:center">
+  <div class="center reveal"><span class="tag">Who it's for</span><h2>Built for people and the pros who care for them</h2></div>
+  <div class="toggle" id="toggle"><i></i><button class="on" data-k="me">For individuals</button><button data-k="pro">For practitioners</button></div>
+  <div class="feat" id="feat" style="text-align:left"></div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="center reveal"><span class="tag">Your journey</span><h2>What to expect</h2></div>
+  <div class="time">
+    <div class="card reveal"><h4>Day one</h4><h3>Start simply</h3><ul><li>Upload your latest labs</li><li>Receive your wellness score</li><li>See your top priorities</li></ul></div>
+    <div class="card reveal"><h4>First weeks</h4><h3>Build the picture</h3><ul><li>Add quick daily check-ins</li><li>Spot links between habits and results</li><li>Refine your plan</li></ul></div>
+    <div class="card reveal"><h4>Ongoing</h4><h3>Grow with it</h3><ul><li>Compare results over time</li><li>Get updated guidance</li><li>Track lasting change</li></ul></div>
+  </div>
+</div></section>
+
+<section id="faq" style="padding-top:40px"><div class="wrap">
+  <div class="center reveal"><span class="tag">FAQ</span><h2>Good questions</h2></div>
+  <div class="faq" id="faqs"></div>
+</div></section>
+
+<section id="join" style="padding-top:20px"><div class="wrap">
+  <div class="cta reveal">
+    <div><h2>Be among the first to try Lumora</h2><p>Early members get priority onboarding and founding-member pricing.</p></div>
+    <form id="form">
+      <input required placeholder="First name" id="fn">
+      <input required type="email" placeholder="Email address">
+      <button class="btn" type="submit">Join the waitlist <span>→</span></button>
+      <div class="msg" id="msg"></div>
+    </form>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <div class="logo" style="color:var(--ink)"><i></i>Lumora</div>
+  <div>hello@lumora.health · Privacy · Terms</div>
+  <div>© 2026 Lumora Health</div>
+</div></footer>
+
+<script>
+const $=s=>document.querySelector(s);
+// nav
+addEventListener('scroll',()=>$('#nav').classList.toggle('solid',scrollY>40));
+// reveal
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.15});
+const watch=()=>document.querySelectorAll('.reveal:not(.in)').forEach(el=>io.observe(el));
+
+// markers
+const mk=[["42","ng/mL","Vitamin D","Supports immunity, mood and bone strength.",.55],["5.1","%","HbA1c","A three-month view of blood sugar balance.",.4],["1.8","mIU/L","TSH","A key signal of how your thyroid is working.",.45],["0.6","mg/L","hs-CRP","A sensitive marker of low-level inflammation.",.3],["14.2","g/dL","Haemoglobin","Carries oxygen to every tissue in your body.",.6],["8.1","µmol/L","Homocysteine","Linked to heart and methylation health.",.72],["1.3","mmol/L","HDL","The protective side of your cholesterol profile.",.58],["22","µg/dL","Cortisol (AM)","Reflects your stress and energy rhythm.",.5]];
+const card=m=>`<div class="mk"><span class="v">${m[0]}</span><span class="u">${m[1]}</span><h4>${m[2]}</h4><p>${m[3]}</p><div class="bar"><i style="left:calc(${m[4]*100}% - 7px)"></i></div></div>`;
+$('#track').innerHTML=(mk.map(card).join('')).repeat(2);
+
+// steps
+const st=[["Fast","Answers in minutes rather than weeks."],["Preventive","Act on early signals, before symptoms appear."],["Borderless","Access from wherever you live."],["Connected","Labs, symptoms and habits in one view."],["Personal","Guidance shaped by your data, not averages."]];
+$('#steps').innerHTML=st.map((s,i)=>`<div class="step${i?'':' on'}"><span class="n">0${i+1}</span><div><b>${s[0]}</b><p>${s[1]}</p></div></div>`).join('');
+let si=0;const steps=[...document.querySelectorAll('.step')];
+const setStep=i=>{steps.forEach(s=>s.classList.remove('on'));steps[i].classList.add('on');si=i};
+steps.forEach((s,i)=>s.onclick=()=>setStep(i));
+setInterval(()=>setStep((si+1)%steps.length),3500);
+
+// ring
+let done=false;new IntersectionObserver(e=>{if(e[0].isIntersecting&&!done){done=true;let v=0;const t=setInterval(()=>{v++;$('#score').textContent=v;$('#ring').style.setProperty('--p',v+'%');if(v>=78)clearInterval(t)},18)}}).observe($('#ring'));
+
+// conditions
+const cond={"Digestion":["Bloating","Reflux","IBS","Food sensitivities","Constipation","Gut dysbiosis","Coeliac support"],"Hormones":["PCOS","Perimenopause","Menopause","Low testosterone","Thyroid imbalance","Fertility support","PMS"],"Mind & Sleep":["Anxiety","Low mood","Brain fog","Poor sleep","Burnout","Focus & attention"],"Immunity":["Frequent infections","Allergies","Autoimmune support","Post-viral fatigue","Histamine issues"],"Metabolism":["Insulin resistance","High cholesterol","Blood pressure","Fatty liver","Weight management","Low iron"],"Skin":["Acne","Eczema","Psoriasis","Rosacea","Hair thinning"]};
+const keys=Object.keys(cond);
+$('#tabs').innerHTML=keys.map((k,i)=>`<button class="${i?'':'on'}">${k}</button>`).join('');
+const showC=k=>$('#conds').innerHTML=cond[k].map((c,i)=>`<span style="animation-delay:${i*40}ms">${c}</span>`).join('');
+document.querySelectorAll('#tabs button').forEach((b,i)=>b.onclick=()=>{document.querySelectorAll('#tabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');showC(keys[i])});
+showC(keys[0]);
+
+// audience
+const aud={me:[["Plain-language results","No jargon — just what it means for you."],["Early warnings","Notice changes before they become problems."],["Your own plan","Suggestions that fit your life and goals."],["Progress tracking","Watch your markers improve over time."],["Share with your doctor","Export a clean summary in one tap."],["You own your data","Delete or download it whenever you like."]],
+pro:[["Client dashboard","Every client's labs and notes, organised."],["Auto-generated reports","Save hours of manual interpretation."],["Priority flags","See who needs attention first."],["Progress heatmaps","Compare markers across visits at a glance."],["Scheduled check-ins","Keep clients engaged between sessions."],["Resource library","Share handouts and protocols instantly."]]};
+const showA=k=>$('#feat').innerHTML=aud[k].map((f,i)=>`<div style="animation-delay:${i*50}ms"><b>${f[0]}</b><p>${f[1]}</p></div>`).join('');
+document.querySelectorAll('#toggle button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#toggle button').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('#toggle').classList.toggle('pro',b.dataset.k==='pro');showA(b.dataset.k)});
+showA('me');
+
+// faq
+const fq=[["When will Lumora launch?","We're onboarding in waves. Waitlist members are invited first, in the order they signed up."],["Does Lumora diagnose conditions?","No. Lumora helps explain and organise your results. Diagnosis and treatment should always come from a qualified healthcare professional."],["Can I use tests I've already done?","Yes. Upload past lab reports and we'll convert them into a consistent, readable format."],["Is my data safe?","Your data is encrypted in transit and at rest, and you control who can access it."],["I'm a practitioner — is there a team plan?","Yes. Practitioner plans include client management, reporting tools and team access."],["Can I cancel anytime?","Yes. Plans are month-to-month with no lock-in."]];
+$('#faqs').innerHTML=fq.map(q=>`<div class="q"><button>${q[0]}<span>+</span></button><div class="a"><p>${q[1]}</p></div></div>`).join('');
+document.querySelectorAll('.q button').forEach(b=>b.onclick=()=>{const q=b.parentElement,o=q.classList.contains('open');document.querySelectorAll('.q').forEach(x=>x.classList.remove('open'));if(!o)q.classList.add('open')});
+
+// form
+$('#form').onsubmit=e=>{e.preventDefault();$('#msg').textContent=`Thanks, ${$('#fn').value}! You're on the list — we'll be in touch soon.`;e.target.reset()};
+
+watch();
+</script>
+</body>
+</html>
